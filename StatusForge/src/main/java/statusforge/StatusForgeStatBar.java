@@ -1,6 +1,7 @@
 package statusforge;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 
 import necesse.engine.Settings;
 import necesse.engine.localization.Localization;
@@ -10,6 +11,7 @@ import necesse.engine.window.GameWindow;
 import necesse.engine.window.WindowManager;
 import necesse.entity.mobs.PlayerMob;
 import necesse.gfx.Renderer;
+import necesse.gfx.drawOptions.DrawOptionsBox;
 import necesse.gfx.drawOptions.DrawOptionsList;
 import necesse.gfx.drawOptions.StringDrawOptions;
 import necesse.gfx.gameFont.FontManager;
@@ -27,6 +29,12 @@ public class StatusForgeStatBar {
     private static final Color HUNGER_COLOR = new Color(150, 75, 0);
     private static final Color MANA_COLOR = new Color(51, 133, 224);
 
+    // Layout constants shared by drawing and by the bounds reported to the vanilla HUD
+    private static final int TOP_Y = 32;
+    private static final int BAR_WIDTH = 200;
+    private static final int BAR_HEIGHT = 12;
+    private static final int ICON_OFFSET = 24;
+
     // Define font options as static constant
     private static final FontOptions TEXT_FONT_OPTIONS = new FontOptions(12).outline().color(Color.WHITE);
 
@@ -43,10 +51,10 @@ public class StatusForgeStatBar {
         GameWindow window = WindowManager.getWindow();
         int hudWidth = window.getHudWidth();
         int centerX = hudWidth / 2;
-        int currentY = 32;
-        int barWidth = 200;
-        int barHeight = 12;
-        int iconOffset = 24;
+        int currentY = TOP_Y;
+        int barWidth = BAR_WIDTH;
+        int barHeight = BAR_HEIGHT;
+        int iconOffset = ICON_OFFSET;
         int startX = centerX - (barWidth + iconOffset) / 2;
 
         int mouseX = window.mousePos().hudX;
@@ -79,7 +87,7 @@ public class StatusForgeStatBar {
         currentY += barHeight + Settings.UI.formSpacing + 4;
 
         // --- Resilience Bar ---
-        if (player.getMaxResilience() > 0) {
+        if (hasResilienceBar(player)) {
             float resiliencePerc = player.getResilience() / player.getMaxResilience();
             boolean resilienceHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX,
                     mouseY);
@@ -104,8 +112,7 @@ public class StatusForgeStatBar {
         }
 
         // --- Food/Hunger Bar ---
-        if (player.getLevel() != null && player.getLevel().getWorldSettings() != null
-                && player.getLevel().getWorldSettings().playerHunger()) {
+        if (hasHungerBar(player)) {
             float hungerLevel = Math.min(1.0F, player.hungerLevel);
             boolean foodHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX,
                     mouseY);
@@ -130,7 +137,7 @@ public class StatusForgeStatBar {
         }
 
         // --- Mana Bar ---
-        if (player.getLevel() != null && player.usesMana() && player.isManaBarVisible()) {
+        if (hasManaBar(player)) {
             final float mana = player.getMana();
             final int maxMana = player.getMaxMana();
             float manaPerc = GameMath.limit(mana / maxMana, 0.0F, 1.0F);
@@ -156,6 +163,62 @@ public class StatusForgeStatBar {
         }
 
         drawOptions.draw();
+    }
+
+    private static boolean hasResilienceBar(PlayerMob player) {
+        return player.getMaxResilience() > 0;
+    }
+
+    private static boolean hasHungerBar(PlayerMob player) {
+        return player.getLevel() != null && player.getLevel().getWorldSettings() != null
+                && player.getLevel().getWorldSettings().playerHunger();
+    }
+
+    private static boolean hasManaBar(PlayerMob player) {
+        return player.getLevel() != null && player.usesMana() && player.isManaBarVisible();
+    }
+
+    /**
+     * The area our bars occupy. Returned from the patched getStatusDrawBox so the
+     * vanilla HUD (buff icons, click-through hitbox) lays out around our bars
+     * instead of the hidden vanilla hearts.
+     */
+    public static DrawOptionsBox getStatusBox(PlayerMob player) {
+        if (player == null) {
+            return null;
+        }
+        int bars = 1;
+        if (hasResilienceBar(player)) {
+            bars++;
+        }
+        if (hasHungerBar(player)) {
+            bars++;
+        }
+        if (hasManaBar(player)) {
+            bars++;
+        }
+        int hudWidth = WindowManager.getWindow().getHudWidth();
+        int width = BAR_WIDTH + ICON_OFFSET;
+        int step = BAR_HEIGHT + Settings.UI.formSpacing + 4;
+        return new StatusBox(new Rectangle(hudWidth / 2 - width / 2, TOP_Y, width, bars * step));
+    }
+
+    private static final class StatusBox implements DrawOptionsBox {
+        private final Rectangle bounds;
+
+        StatusBox(Rectangle bounds) {
+            this.bounds = bounds;
+        }
+
+        @Override
+        public Rectangle getBoundingBox() {
+            return bounds;
+        }
+
+        @Override
+        public void draw() {
+            // Bars are drawn by MainGameDrawStatusBarPatch
+        }
     }
 
     // Helper for hover check
