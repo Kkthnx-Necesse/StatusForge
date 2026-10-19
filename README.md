@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=3639977757">
-    <img width="256" height="256" alt="preview" src="https://github.com/user-attachments/assets/fd123862-6d3d-4979-9df8-eb097dc14582" />
+    <img width="256" height="256" alt="preview" src="StatusForge/src/main/resources/preview.png" />
   </a>
 </p>
 
