@@ -25,7 +25,7 @@ project.ext.clientside = true
  * Uncomment and configure these if your mod has dependencies
  */
 //project.ext.modDependencies = ["other.modid1", "other.modid2"]
-//project.ext.modOptionalDependencies = ["optional.modid1", "optional.modid2"]
+project.ext.modOptionalDependencies = ["kkthnx.settingsforge"] // Adds the Always show values checkbox to SettingsForge Mod Settings page when installed
 
 // The path to the games install directory
 def gameDirectory = "D:/SteamLibrary/steamapps/common/Necesse"

@@ -19,6 +19,7 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 - Matches your selected **Interface Style** (theme-aware)
 - Includes **percentage text** for quick readability
 - Optional **always show values** mode, toggled with a key (default **F8**, rebindable under Controls)
+- With [SettingsForge](https://github.com/Kkthnx-Necesse/SettingsForge) installed, the same option also shows up as a checkbox under Settings, Mod Settings. SettingsForge is optional and not required
 
 ---
 

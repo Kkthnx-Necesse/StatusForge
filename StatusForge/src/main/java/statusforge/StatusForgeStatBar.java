@@ -62,7 +62,7 @@ public class StatusForgeStatBar {
 
         // Text is built for the hovered bar, or for every bar when the always show
         // option is on. Tooltips only ever build for the hovered bar.
-        boolean always = StatusForge.settings.alwaysShowValues;
+        boolean always = StatusForge.alwaysShowValues();
 
         // --- Health Bar ---
         int health = player.getHealth();
