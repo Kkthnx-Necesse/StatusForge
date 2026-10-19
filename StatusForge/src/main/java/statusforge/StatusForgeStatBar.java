@@ -60,16 +60,19 @@ public class StatusForgeStatBar {
 
         DrawOptionsList drawOptions = new DrawOptionsList();
 
-        // Text and tooltip strings are only built for the bar the mouse is over,
-        // so an idle HUD does no string work per frame.
+        // Text is built for the hovered bar, or for every bar when the always show
+        // option is on. Tooltips only ever build for the hovered bar.
+        boolean always = StatusForge.settings.alwaysShowValues;
 
         // --- Health Bar ---
         int health = player.getHealth();
         int maxHealth = player.getMaxHealth();
         boolean hovered = isHovered(startX, y, mouseX, mouseY);
         String text = null;
-        if (hovered) {
+        if (hovered || always) {
             text = health + " / " + maxHealth;
+        }
+        if (hovered) {
             addTooltip("healthbartip", health + "/" + maxHealth);
         }
         drawBar(startX, y, getPercent(health, maxHealth), HEALTH_COLOR, Settings.UI.heart_fill, text, drawOptions);
@@ -81,8 +84,10 @@ public class StatusForgeStatBar {
             int maxResilience = player.getMaxResilience();
             hovered = isHovered(startX, y, mouseX, mouseY);
             text = null;
-            if (hovered) {
+            if (hovered || always) {
                 text = resilience + " / " + maxResilience;
+            }
+            if (hovered) {
                 addTooltip("resiliencebartip", resilience + "/" + maxResilience);
             }
             drawBar(startX, y, getPercent(player.getResilience(), maxResilience), RESILIENCE_COLOR,
@@ -95,8 +100,10 @@ public class StatusForgeStatBar {
             float hunger = GameMath.limit(player.hungerLevel, 0.0F, 1.0F);
             hovered = isHovered(startX, y, mouseX, mouseY);
             text = null;
-            if (hovered) {
+            if (hovered || always) {
                 text = (int) Math.ceil(hunger * 100.0F) + "%";
+            }
+            if (hovered) {
                 addTooltip("hungerbartip", text);
             }
             drawBar(startX, y, hunger, HUNGER_COLOR, Settings.UI.food_fill, text, drawOptions);
@@ -109,9 +116,11 @@ public class StatusForgeStatBar {
             int maxMana = player.getMaxMana();
             hovered = isHovered(startX, y, mouseX, mouseY);
             text = null;
-            if (hovered) {
-                int shownMana = (int) Math.ceil(mana);
+            int shownMana = (int) Math.ceil(mana);
+            if (hovered || always) {
                 text = shownMana + " / " + maxMana;
+            }
+            if (hovered) {
                 addTooltip("manabartip", shownMana + "/" + maxMana);
             }
             drawBar(startX, y, getPercent(mana, maxMana), MANA_COLOR, StatusForge.manaIcon, text, drawOptions);
@@ -236,7 +245,7 @@ public class StatusForgeStatBar {
         // 3. Draw Themed Edge (The Border Frame)
         drawOptions.add(() -> Settings.UI.form.getEdgeDrawOptions(barX, y, width, height).draw());
 
-        // 4. Draw Text (Only if Hovered, caller passes null otherwise)
+        // 4. Draw Text (caller passes null when values should stay hidden)
         if (text != null) {
             int textWidth = FontManager.bit.getWidthCeil(text, TEXT_FONT_OPTIONS);
             int textHeight = (int) FontManager.bit.getHeight(text, TEXT_FONT_OPTIONS);

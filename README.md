@@ -18,6 +18,7 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 - Shows **hover tooltips**
 - Matches your selected **Interface Style** (theme-aware)
 - Includes **percentage text** for quick readability
+- Optional **always show values** mode, toggled with a key (default **F8**, rebindable under Controls)
 
 ---
 
@@ -34,6 +35,7 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 ### 1.1
 - Updated for Necesse 1.3.3
 - Buff icons and the HUD click-through area now follow the StatusForge bars
+- New toggle key to show health, mana, resilience and food values at all times instead of only on hover. The choice is saved
 - Bars are clamped to 0-100% and tooltip text is only built while hovering
 
 ---

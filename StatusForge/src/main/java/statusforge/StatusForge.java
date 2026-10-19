@@ -1,5 +1,11 @@
 package statusforge;
 
+import org.lwjgl.glfw.GLFW;
+
+import necesse.engine.Settings;
+import necesse.engine.input.Control;
+import necesse.engine.localization.message.StaticMessage;
+import necesse.engine.modLoader.ModSettings;
 import necesse.engine.modLoader.annotations.ModEntry;
 import necesse.gfx.gameTexture.GameTexture;
 
@@ -7,9 +13,18 @@ import necesse.gfx.gameTexture.GameTexture;
 public class StatusForge {
 
     public static GameTexture manaIcon;
+    public static final StatusForgeSettings settings = new StatusForgeSettings();
+    public static Control toggleValuesControl;
 
     public void init() {
+        // Shows up under this mod in the Controls menu, so players can rebind it
+        toggleValuesControl = Control.addModControl(new Control(GLFW.GLFW_KEY_F8, "statusforge.togglevalues",
+                new StaticMessage("Toggle bar values")));
         System.out.println("Thanks for using StatusForge!");
+    }
+
+    public ModSettings initSettings() {
+        return settings;
     }
 
     public void initResources() {
@@ -21,6 +36,14 @@ public class StatusForge {
         // color
 
         manaIcon = GameTexture.fromFile("misc/mana");
+    }
+
+    /** Called once per frame. Flips the always show values option when the key is pressed. */
+    public static void pollToggle() {
+        if (toggleValuesControl != null && toggleValuesControl.isPressed()) {
+            settings.alwaysShowValues = !settings.alwaysShowValues;
+            Settings.saveClientSettings();
+        }
     }
 
 }
