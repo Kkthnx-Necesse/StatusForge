@@ -33,7 +33,10 @@ public class StatusForgeStatBar {
     private static final int TOP_Y = 32;
     private static final int BAR_WIDTH = 200;
     private static final int BAR_HEIGHT = 12;
-    private static final int ICON_OFFSET = 24;
+    private static final int ICON_SIZE = 16;
+    private static final int ICON_SPACING = 8;
+    private static final int ICON_OFFSET = ICON_SIZE + ICON_SPACING;
+    private static final int HOVER_PADDING = 6;
 
     // Define font options as static constant
     private static final FontOptions TEXT_FONT_OPTIONS = new FontOptions(12).outline().color(Color.WHITE);
@@ -49,117 +52,69 @@ public class StatusForgeStatBar {
         }
 
         GameWindow window = WindowManager.getWindow();
-        int hudWidth = window.getHudWidth();
-        int centerX = hudWidth / 2;
-        int currentY = TOP_Y;
-        int barWidth = BAR_WIDTH;
-        int barHeight = BAR_HEIGHT;
-        int iconOffset = ICON_OFFSET;
-        int startX = centerX - (barWidth + iconOffset) / 2;
-
+        int startX = window.getHudWidth() / 2 - (BAR_WIDTH + ICON_OFFSET) / 2;
         int mouseX = window.mousePos().hudX;
         int mouseY = window.mousePos().hudY;
+        int step = getStep();
+        int y = TOP_Y;
 
         DrawOptionsList drawOptions = new DrawOptionsList();
 
+        // Text and tooltip strings are only built for the bar the mouse is over,
+        // so an idle HUD does no string work per frame.
+
         // --- Health Bar ---
-        float healthPerc = (float) player.getHealth() / player.getMaxHealth();
-
-        // Optimize hover check: Use math instead of creating Rectangle logic
-        boolean healthHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX, mouseY);
-
-        drawBar(
-                startX, currentY, barWidth, barHeight,
-                healthPerc,
-                HEALTH_COLOR,
-                Settings.UI.heart_fill,
-                player.getHealth() + " / " + player.getMaxHealth(),
-                healthHovered,
-                drawOptions);
-
-        if (healthHovered) {
-            GameTooltipManager.addTooltip(
-                    new StringTooltips(Localization.translate("ui", "healthbartip", "value",
-                            player.getHealth() + "/" + player.getMaxHealth())),
-                    TooltipLocation.PLAYER);
+        int health = player.getHealth();
+        int maxHealth = player.getMaxHealth();
+        boolean hovered = isHovered(startX, y, mouseX, mouseY);
+        String text = null;
+        if (hovered) {
+            text = health + " / " + maxHealth;
+            addTooltip("healthbartip", health + "/" + maxHealth);
         }
-
-        currentY += barHeight + Settings.UI.formSpacing + 4;
+        drawBar(startX, y, getPercent(health, maxHealth), HEALTH_COLOR, Settings.UI.heart_fill, text, drawOptions);
+        y += step;
 
         // --- Resilience Bar ---
         if (hasResilienceBar(player)) {
-            float resiliencePerc = player.getResilience() / player.getMaxResilience();
-            boolean resilienceHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX,
-                    mouseY);
-
-            drawBar(
-                    startX, currentY, barWidth, barHeight,
-                    resiliencePerc,
-                    RESILIENCE_COLOR,
-                    Settings.UI.resilience_fill,
-                    (int) player.getResilience() + " / " + player.getMaxResilience(),
-                    resilienceHovered,
-                    drawOptions);
-
-            if (resilienceHovered) {
-                GameTooltipManager.addTooltip(
-                        new StringTooltips(Localization.translate("ui", "resiliencebartip", "value",
-                                (int) player.getResilience() + "/" + player.getMaxResilience())),
-                        TooltipLocation.PLAYER);
+            int resilience = (int) player.getResilience();
+            int maxResilience = player.getMaxResilience();
+            hovered = isHovered(startX, y, mouseX, mouseY);
+            text = null;
+            if (hovered) {
+                text = resilience + " / " + maxResilience;
+                addTooltip("resiliencebartip", resilience + "/" + maxResilience);
             }
-
-            currentY += barHeight + Settings.UI.formSpacing + 4;
+            drawBar(startX, y, getPercent(player.getResilience(), maxResilience), RESILIENCE_COLOR,
+                    Settings.UI.resilience_fill, text, drawOptions);
+            y += step;
         }
 
         // --- Food/Hunger Bar ---
         if (hasHungerBar(player)) {
-            float hungerLevel = Math.min(1.0F, player.hungerLevel);
-            boolean foodHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX,
-                    mouseY);
-
-            drawBar(
-                    startX, currentY, barWidth, barHeight,
-                    hungerLevel,
-                    HUNGER_COLOR,
-                    Settings.UI.food_fill,
-                    (int) Math.ceil(hungerLevel * 100.0F) + "%",
-                    foodHovered,
-                    drawOptions);
-
-            if (foodHovered) {
-                GameTooltipManager.addTooltip(
-                        new StringTooltips(Localization.translate("ui", "hungerbartip", "value",
-                                (int) Math.ceil(hungerLevel * 100.0F) + "%")),
-                        TooltipLocation.PLAYER);
+            float hunger = GameMath.limit(player.hungerLevel, 0.0F, 1.0F);
+            hovered = isHovered(startX, y, mouseX, mouseY);
+            text = null;
+            if (hovered) {
+                text = (int) Math.ceil(hunger * 100.0F) + "%";
+                addTooltip("hungerbartip", text);
             }
-
-            currentY += barHeight + Settings.UI.formSpacing + 4;
+            drawBar(startX, y, hunger, HUNGER_COLOR, Settings.UI.food_fill, text, drawOptions);
+            y += step;
         }
 
         // --- Mana Bar ---
         if (hasManaBar(player)) {
-            final float mana = player.getMana();
-            final int maxMana = player.getMaxMana();
-            float manaPerc = GameMath.limit(mana / maxMana, 0.0F, 1.0F);
-            boolean manaHovered = isHovered(startX, currentY - 6, barWidth + iconOffset, barHeight + 12, mouseX,
-                    mouseY);
-
-            drawBar(
-                    startX, currentY, barWidth, barHeight,
-                    manaPerc,
-                    MANA_COLOR,
-                    StatusForge.manaIcon,
-                    (int) Math.ceil(mana) + " / " + maxMana,
-                    manaHovered,
-                    drawOptions);
-
-            if (manaHovered) {
-                GameTooltipManager.addTooltip(
-                        new StringTooltips(Localization.translate("ui", "manabartip", "value",
-                                (int) Math.ceil(mana) + "/" + maxMana)),
-                        TooltipLocation.PLAYER);
+            float mana = player.getMana();
+            int maxMana = player.getMaxMana();
+            hovered = isHovered(startX, y, mouseX, mouseY);
+            text = null;
+            if (hovered) {
+                int shownMana = (int) Math.ceil(mana);
+                text = shownMana + " / " + maxMana;
+                addTooltip("manabartip", shownMana + "/" + maxMana);
             }
-            currentY += barHeight + Settings.UI.formSpacing + 4;
+            drawBar(startX, y, getPercent(mana, maxMana), MANA_COLOR, StatusForge.manaIcon, text, drawOptions);
         }
 
         drawOptions.draw();
@@ -176,6 +131,24 @@ public class StatusForgeStatBar {
 
     private static boolean hasManaBar(PlayerMob player) {
         return player.getLevel() != null && player.usesMana() && player.isManaBarVisible();
+    }
+
+    private static int getStep() {
+        return BAR_HEIGHT + Settings.UI.formSpacing + 4;
+    }
+
+    /** Fill fraction clamped to 0..1, safe against a zero or negative max. */
+    private static float getPercent(float current, float max) {
+        if (max <= 0) {
+            return 0.0F;
+        }
+        return GameMath.limit(current / max, 0.0F, 1.0F);
+    }
+
+    private static void addTooltip(String key, String value) {
+        GameTooltipManager.addTooltip(
+                new StringTooltips(Localization.translate("ui", key, "value", value)),
+                TooltipLocation.PLAYER);
     }
 
     /**
@@ -197,10 +170,9 @@ public class StatusForgeStatBar {
         if (hasManaBar(player)) {
             bars++;
         }
-        int hudWidth = WindowManager.getWindow().getHudWidth();
         int width = BAR_WIDTH + ICON_OFFSET;
-        int step = BAR_HEIGHT + Settings.UI.formSpacing + 4;
-        return new StatusBox(new Rectangle(hudWidth / 2 - width / 2, TOP_Y, width, bars * step));
+        int x = WindowManager.getWindow().getHudWidth() / 2 - width / 2;
+        return new StatusBox(new Rectangle(x, TOP_Y, width, bars * getStep()));
     }
 
     private static final class StatusBox implements DrawOptionsBox {
@@ -221,60 +193,54 @@ public class StatusForgeStatBar {
         }
     }
 
-    // Helper for hover check
-    private static boolean isHovered(int x, int y, int width, int height, int mouseX, int mouseY) {
-        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    // Plain bounds check, avoids allocating a Rectangle per bar per frame
+    private static boolean isHovered(int x, int y, int mouseX, int mouseY) {
+        int width = BAR_WIDTH + ICON_OFFSET;
+        int height = BAR_HEIGHT + HOVER_PADDING * 2;
+        return mouseX >= x && mouseX < x + width && mouseY >= y - HOVER_PADDING && mouseY < y - HOVER_PADDING + height;
     }
 
-    private static void drawBar(int x, int y, int width, int height, float percent, Color color, GameTexture icon,
-            String text, boolean isHovered, DrawOptionsList drawOptions) {
-        int iconSize = 16;
-        int iconSpacing = 8;
-        int barX = x;
+    private static void drawBar(int x, int y, float percent, Color color, GameTexture icon, String text,
+            DrawOptionsList drawOptions) {
+        final int width = BAR_WIDTH;
+        final int height = BAR_HEIGHT;
 
-        // Draw Icon
+        // Icon sits on the left, the bar always starts after the icon slot
         if (icon != null) {
-            drawOptions.add(icon.initDraw().size(iconSize, iconSize).pos(x, y + height / 2 - iconSize / 2));
-            barX += iconSize + iconSpacing;
-        } else {
-            barX += iconSize + iconSpacing;
+            drawOptions.add(icon.initDraw().size(ICON_SIZE, ICON_SIZE).pos(x, y + height / 2 - ICON_SIZE / 2));
         }
-
-        int finalBarX = barX;
+        final int barX = x + ICON_OFFSET;
 
         // --- Themed Border Logic ---
 
         // 1. Draw Themed Background (Form Center)
         // Dynamic offset calculation: Primal is 8, we want 6. Legacy is 5, we want 3.
         // Ghost is 6, but needs 0 offset (5) to fill properly.
-        int edgeOffset;
+        final int edgeOffset;
         if (Settings.UI.texturesPath.equals("ghost")) {
             edgeOffset = Settings.UI.form.edgeMargin;
         } else {
             edgeOffset = Settings.UI.form.edgeMargin - 2;
         }
-        drawOptions
-                .add(() -> Settings.UI.form.getCenterDrawOptions(finalBarX - edgeOffset, y - edgeOffset,
-                        width + (edgeOffset * 2), height + (edgeOffset * 2)).draw());
+        drawOptions.add(() -> Settings.UI.form.getCenterDrawOptions(barX - edgeOffset, y - edgeOffset,
+                width + (edgeOffset * 2), height + (edgeOffset * 2)).draw());
 
-        // 3. Draw Progress Bar Fill
-        int fillWidthMax = width - 2;
-        int filled = (int) (percent * fillWidthMax);
-
+        // 2. Draw Progress Bar Fill
+        int filled = (int) (percent * (width - 2));
         if (filled > 0) {
             drawOptions.add(Renderer.initQuadDraw(filled, height - 2)
                     .color(color)
-                    .pos(finalBarX + 1, y + 1));
+                    .pos(barX + 1, y + 1));
         }
 
-        // 4. Draw Themed Edge (The Border Frame)
-        drawOptions.add(() -> Settings.UI.form.getEdgeDrawOptions(finalBarX, y, width, height).draw());
+        // 3. Draw Themed Edge (The Border Frame)
+        drawOptions.add(() -> Settings.UI.form.getEdgeDrawOptions(barX, y, width, height).draw());
 
-        // Draw Text (Only if Hovered)
-        if (text != null && isHovered) {
+        // 4. Draw Text (Only if Hovered, caller passes null otherwise)
+        if (text != null) {
             int textWidth = FontManager.bit.getWidthCeil(text, TEXT_FONT_OPTIONS);
             int textHeight = (int) FontManager.bit.getHeight(text, TEXT_FONT_OPTIONS);
-            int textX = finalBarX + width / 2 - textWidth / 2;
+            int textX = barX + width / 2 - textWidth / 2;
             int textY = y + height / 2 - textHeight / 2;
             drawOptions.add(new StringDrawOptions(TEXT_FONT_OPTIONS, text).pos(textX, textY));
         }

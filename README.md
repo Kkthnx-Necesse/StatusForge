@@ -25,6 +25,16 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 
 - **Client-side only** (players install it)
 - Servers do **NOT** need this mod
+- Built for Necesse **1.3.3**
+
+---
+
+## Changelog
+
+### 1.1
+- Updated for Necesse 1.3.3
+- Buff icons and the HUD click-through area now follow the StatusForge bars
+- Bars are clamped to 0-100% and tooltip text is only built while hovering
 
 ---
 
