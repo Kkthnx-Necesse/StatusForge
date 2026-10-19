@@ -28,6 +28,7 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 - **Client-side only** (players install it)
 - Servers do **NOT** need this mod
 - Built for Necesse **1.3.3**
+- [SettingsForge](https://github.com/Kkthnx-Necesse/SettingsForge) is **optional**, only needed if you want the settings checkbox
 
 ---
 
@@ -38,6 +39,7 @@ Replaces vanilla heart and food icons with clean, theme-aware progress bars and 
 - Buff icons and the HUD click-through area now follow the StatusForge bars
 - New toggle key to show health, mana, resilience and food values at all times instead of only on hover. The choice is saved
 - Bars are clamped to 0-100% and tooltip text is only built while hovering
+- Optional support for [SettingsForge](https://github.com/Kkthnx-Necesse/SettingsForge). When it is installed, Always show values also appears as a checkbox under Settings, Mod Settings. Without it nothing changes and F8 still works
 
 ---
 
